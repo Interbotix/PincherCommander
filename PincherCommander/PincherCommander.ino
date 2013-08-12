@@ -33,7 +33,7 @@ enum {
   IKS_SUCCESS=0, IKS_WARNING, IKS_ERROR};
 
 
-#define CNT_SERVOS  8 //(sizeof(pgm_axdIDs)/sizeof(pgm_axdIDs[0]))
+#define CNT_SERVOS  5 //(sizeof(pgm_axdIDs)/sizeof(pgm_axdIDs[0]))
 
 // Define some Min and Maxs for IK Movements...
 //                y   Z
@@ -158,7 +158,7 @@ void setup() {
 void loop() {
   boolean fChanged = false;
   if (command.ReadMsgs()) {
-    digitalWrite(0,HIGH-digitalRead(0));    
+    digitalWrite(0,HIGH-digitalRead(0));     
     // See if the Arm is active yet...
     if (g_fArmActive) {
       sBase = g_sBase;
@@ -181,6 +181,15 @@ void loop() {
       else if ((command.buttons & BUT_R2) && !(buttonsPrev & BUT_R2)) {
         MoveArmToHome();      
       }
+
+      // Going to use L6 in combination with the right joystick to control both the gripper and the 
+      // wrist rotate...
+      else if (command.buttons & BUT_L6) {
+        sGrip = min(max(sGrip + command.lookV/5, GRIP_MIN), GRIP_MAX);
+        sWristRot = min(max(g_sWristRot + command.lookH/6, WROT_MIN), WROT_MAX);
+        fChanged = (sGrip != g_sGrip) || (sWristRot != g_sWristRot);
+      }
+
 
       
       else {
